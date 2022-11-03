@@ -1,61 +1,47 @@
-import React from 'react';
-import { useRouter } from 'next/router';
-import { authService } from '../src/services/auth/authService';
+import React, { useState } from "react";
+import { useRouter } from "next/router";
+import { authService } from "../src/services/auth/authService";
 
 export default function HomeScreen() {
   const router = useRouter();
-  const [values, setValues] = React.useState({
-    usuario: 'omariosouto',
-    senha: 'safepassword',
-  });
+  const [usuario, setUsuario] = useState('omariosouto');
+  const [senha, setSenha] = useState('safepassword');
 
-  function handleChange(event) {
-    const fieldValue = event.target.value;
-    const fieldName = event.target.name;
-    setValues((currentValues) => {
-      return {
-        ...currentValues,
-        [fieldName]: fieldValue,
-      };
-    })
+  function handleSubmit(event) {
+    event.preventDefault();
+    authService.login({
+        username: usuario,
+        password: senha,
+      })
+      .then(() => {
+        router.push("/auth-page-static");
+        // router.push('/auth-page-ssr');
+      })
+      .catch((err) => {
+        console.log(err);
+        alert("Usuário ou a senha estão inválidos");
+      });
   }
 
   return (
     <div>
       <h1>Login</h1>
-      <form onSubmit={(event) => {
-        // onSubmit -> Controller (pega dados do usuário e passa pra um serviço)
-        // authService -> Serviço
-        event.preventDefault();
-        authService
-          .login({
-            username: values.usuario,
-            password: values.senha,
-          })
-          .then(() => {
-            // router.push('/auth-page-static');
-            router.push('/auth-page-ssr');
-          })
-          .catch((err) => {
-            console.log(err);
-            alert('Usuário ou a senha estão inválidos')
-          })
-      }}>
+      <form onSubmit={handleSubmit}>
         <input
-          placeholder="Usuário" name="usuario"
-          value={values.usuario} onChange={handleChange}
+          placeholder="Usuário"
+          name="usuario"
+          value={usuario}
+          onChange={(event) => setUsuario(event.target.value)}
         />
         <input
-          placeholder="Senha" name="senha" type="password"
-          value={values.senha} onChange={handleChange}
+          placeholder="Senha"
+          name="senha"
+          type="password"
+          value={senha}
+          onChange={(event) => setSenha(event.target.value)}
         />
-        {/* <pre>
-          {JSON.stringify(values, null, 2)}
-        </pre> */}
         <div>
-          <button>
-            Entrar
-          </button>
+          <button>Entrar</button>
         </div>
       </form>
     </div>
